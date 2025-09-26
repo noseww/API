@@ -1,0 +1,31 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/noseww/API#readme",
+  "bugs": {
+    "url": "https://github.com/noseww/API/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noseww/API.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.15.1",
+    "sequelize": "^6.37.7",
+    "socket.io": "^4.8.1",
+    "ws": "^8.18.3"
+  }
+}
