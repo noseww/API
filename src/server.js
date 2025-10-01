@@ -11,8 +11,6 @@ const server = http.createServer(app);
 const start = async () => {
     try {
         await db.sequelize.authenticate();
-        await db.sequelize.sync({ alter: true });
-
         server.listen(env.PORT, () => {
             console.log(`Servidor en http://localhost:${env.PORT}`);
         });

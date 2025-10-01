@@ -3,7 +3,7 @@ import env from "../config/env.js";
 
 export const authMiddleware = (req, res, next) => {
     const header = req.headers["authorization"];
-    if (!header) return res.status(401).json({ message: "No token provided" });
+    if (!header) return res.status(401).json({ message: "Sin token proporcionado" });
 
     const token = header.split(" ")[1];
     jwt.verify(token, env.JWT_SECRET, (err, decoded) => {
