@@ -1,12 +1,13 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
 
-const Item = sequelize.define('Item', {
-    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+const Item = sequelize.define('item', {
+    id_item: {
+        type: DataTypes.INTEGER,
+        primaryKey: true, references: { model: "product", key: "id_product" }
+    },
     name: { type: DataTypes.STRING, allowNull: false },
-    description: { type: DataTypes.STRING, allowNull: true },
     mount: { type: DataTypes.FLOAT, allowNull: false },
-    price: { type: DataTypes.FLOAT, allowNull: false },
-});
+}, { tableName: 'item', timestamps: true });
 
 export default Item;
