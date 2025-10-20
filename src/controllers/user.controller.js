@@ -1,9 +1,18 @@
 import userService from "../services/user.service.js";
 
-export const register = async (req, res, next) => {
+export const saveUser = async (req, res, next) => {
     try {
         const user = await userService.register(req.body);
         res.status(201).json(user);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const updateUser = async (req, res, next) => {
+    try {
+        const user = await userService.update(req.body);
+        res.json(user);
     } catch (err) {
         next(err);
     }

@@ -11,6 +11,15 @@ class UserService {
         const user = await User.create({ username: username, names: names, lastnames: lastnames, email: email, password: hashed, role: role });
         return { id: user.id, username: user.username, names: user.names, lastnames: user.lastnames, email: user.email, password: user.hashed, role: user.role };
     }
+
+    async update({ id, username, names, lastnames, email, password, role }) {
+        const user = await User.findByPk(id);
+        if (!user) throw new Error("Usuario no encontrado");
+        const hashed = password ? await bcrypt.hash(password, 10) : user.password;
+        const userUpdate = await User.update({ username, names, lastnames, email, password: hashed, role }, { where: { id_user: id } });
+        return { id: userUpdate.id_user, username: userUpdate.username, names: userUpdate.names, lastnames: userUpdate.lastnames, email: userUpdate.email, role: userUpdate.role };
+    }
+
     async login({ username, password }) {
         const user = await User.findOne({ where: { username } });
         if (!user) throw new Error("Usuario no encontrado");
@@ -23,8 +32,9 @@ class UserService {
         );
         return { token };
     }
+
     async listUsers() {
-        return await User.findAll({ attributes: ["id", "username", "createdAt"] });
+        return await User.findAll({ attributes: ["id_user", "username", "createdAt"] });
     }
 }
 
