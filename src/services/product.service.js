@@ -1,21 +1,28 @@
 import Product from "../models/product.model.js";
 import Print from "../models/print.model.js";
 import Item from "../models/item.model.js";
+import SpecialService from "../models/sp_service.model.js"
 
 class ProductService {
-    async create({ id, type, description, price, name, mount, type_print, type_paper }) {
+    async create({ type, description, price, name, mount, type_print, type_paper, name_service }) {
         if (type === "item") {
             const existsItem = await Item.findOne({ where: { name } });
             if (existsItem) throw new Error("Ya existe un producto con el mismo nombre");
-            const product = await Product.create({ id_product: id, type: type, description: description, price: price });
+            const product = await Product.create({ type: type, description: description, price: price });
             const item = await Item.create({ id_item: product.id_product, name: name, mount: mount });
             return { id_item: product.id_product, name: item.name, mount: item.mount, type: product.type, description: product.description, price: product.price }
-        } else {
+        } else if (type === "print") {
             const existsPrint = await Print.findOne({ where: { type_print } });
             if (existsPrint) throw new Error("Ya existe una impresion con el mismo tipo");
-            const product = await Product.create({ id_product: id, type: type, description: description, price: price });
+            const product = await Product.create({ type: type, description: description, price: price });
             const print = await Print.create({ id_print: product.id_product, type_print: type_print, type_paper: type_paper });
             return { id_item: product.id_product, type_print: print.type_print, type_paper: print.type_paper, type: product.type, description: product.description, price: product.price }
+        } else {
+            const existsSpServ = await SpecialService.findOne({ where: { name_service } });
+            if (existsSpServ) throw new Error("Ya existe un servicio especial del mismo nombre");
+            const product = await Product.create({ type: type, description: description, price: price });
+            const sp_services = await SpecialService.create({ id_special_service: product.id_product, name_service: name_service });
+            return { id_item: product.id_product, name_service: sp_services.name_service, type: product.type, description: product.description, price: product.price }
         }
     }
 
