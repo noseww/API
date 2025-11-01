@@ -11,8 +11,13 @@ const sequelize = new Sequelize(
     dialectOptions: {
         ssl: {
             require: true,
-            rejectUnauthorized: false
+            rejectUnauthorized: false,
+            charset: 'utf8mb4',
         }
-    }
+    },
+    define: {
+        charset: 'utf8mb4',
+        collate: 'utf8mb4_unicode_ci',
+    },
 });
 export default sequelize;

@@ -8,7 +8,11 @@ const app = express();
 
 app.use(helmet());
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ type: ['application/json', 'application/json; charset=utf-8'] }));
+app.use((req, res, next) => {
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    next();
+});
 app.use(express.urlencoded({ extended: true }));
 app.use('./public', express.static('./public'));
 app.use(express.static('./public'))

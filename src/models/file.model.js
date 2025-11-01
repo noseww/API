@@ -12,7 +12,7 @@ const File = sequelize.define("file", {
         allowNull: false,
         references: { model: "user", key: "id_user" },
     },
-    name_file: {
+    filename: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -20,6 +20,14 @@ const File = sequelize.define("file", {
         type: DataTypes.ENUM("active", "inactive"),
         allowNull: false,
         defaultValue: "active",
+    },
+    type: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    filehash: {
+        type: DataTypes.STRING,
+        allowNull: false
     }
 }, { tableName: "file", timestamps: true });
 

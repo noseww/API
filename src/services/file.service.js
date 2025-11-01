@@ -2,15 +2,15 @@ import File from "../models/file.model.js";
 import User from "../models/user.model.js";
 
 class FileService {
-    async upload({ id_user, name_file }) {
+    async upload({ id_user, filename, type, filehash }) {
         const user = await User.findByPk(id_user);
         if (!user) throw new Error("Usuario no encontrado");
-        const file = await File.create({ id_user: user.id_user, name_file, status: "active" });
+        const file = await File.create({ id_user: user.id_user, filename: filename, status: "active", type: type, filehash: filehash });
         return file;
     }
 
     async findAll() {
-        return await File.findAll({ attributes: ["if_file", "id_iser", "name_file", "status", "createAt"] })
+        return await File.findAll({ attributes: ["if_file", "id_iser", "filename", "status", "type", "filehash", "createAt"] })
     }
 
     async findOne(id) {
@@ -19,10 +19,10 @@ class FileService {
         return file;
     }
 
-    async update(id, { name_file, status }) {
+    async update(id, { filename, status }) {
         const file = await File.findByPk(id);
         if (!file) throw new Error("Archivo no encontrado");
-        await File.update({ name_file, status }, { where: { id_file: id } });
+        await File.update({ filename, status }, { where: { id_file: id } });
         return this.findOne(id);
     }
 
