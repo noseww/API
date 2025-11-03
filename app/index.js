@@ -6,33 +6,32 @@ const upload = (file) => {
     const fd = new FormData();
     fd.append("files", file);
     fd.append("username", "chip"); // o id del usuario
-    fetch('http://localhost:4000/api/file_manager?service=file', { // Your POST endpoint
+    fetch('https://noninitial-chirurgical-judah.ngrok-free.dev/api/file_manager?service=', { // Your POST endpoint
         method: 'POST',
         headers: {
             "Accept": "*/*",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJjaGlwIiwiaWF0IjoxNzYxOTgxNTQ2LCJleHAiOjE3NjE5ODUxNDZ9.OulXLhubMrr-pf0Zl7r_aTjiHZuYYO8RBHPZRGV96oU",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJjaGlwIiwiaWF0IjoxNzYyMTM5MTc3fQ.VDB8TeGi8nI3RG6Ie5XaI8RKrTeIJtHLeU36aoZksew",
         },
         body: fd
     }).then(
         async response => {
             let res = (await response.json())[0]
-            console.log(res)
-            fetch('http://localhost:4000/api/files', { // Your POST endpoint
+            fetch('https://noninitial-chirurgical-judah.ngrok-free.dev/api/files', { // Your POST endpoint
                 method: 'POST',
                 headers: {
                     "Accept": "*/*",
                     'Content-Type': 'application/json; charset=utf-8',
-                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJjaGlwIiwiaWF0IjoxNzYxOTgxNTQ2LCJleHAiOjE3NjE5ODUxNDZ9.OulXLhubMrr-pf0Zl7r_aTjiHZuYYO8RBHPZRGV96oU",
+                    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJjaGlwIiwiaWF0IjoxNzYyMTM5MTc3fQ.VDB8TeGi8nI3RG6Ie5XaI8RKrTeIJtHLeU36aoZksew",
                 },
                 body: JSON.stringify({
                     id_user: 1, filename: res.originalName, type: res.service, filehash: res.storedName
-            })
-        }).then(async response => console.log(await response.json()))
-}  // if the response is a JSON object
+                })
+            }).then(async response => console.log(await response.json()))
+        }  // if the response is a JSON object
 
 
-    ).catch (
-error => console.log(error) // Handle the error response object
+    ).catch(
+        error => console.log(error) // Handle the error response object
     );
 };
 
