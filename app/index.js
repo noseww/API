@@ -6,7 +6,7 @@ const upload = (file) => {
     const fd = new FormData();
     fd.append("files", file);
     fd.append("username", "chip"); // o id del usuario
-    fetch('https://noninitial-chirurgical-judah.ngrok-free.dev/api/file_manager?service=file', { // Your POST endpoint
+    fetch('http://localhost:4000/api/file-manager?service=file', { // Your POST endpoint
         method: 'POST',
         headers: {
             "Accept": "*/*",
@@ -16,7 +16,7 @@ const upload = (file) => {
     }).then(
         async response => {
             let res = (await response.json())[0]
-            fetch('https://noninitial-chirurgical-judah.ngrok-free.dev/api/files', { // Your POST endpoint
+            fetch('http://localhost:4000/api/files', { // Your POST endpoint
                 method: 'POST',
                 headers: {
                     "Accept": "*/*",

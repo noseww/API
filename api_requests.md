@@ -612,16 +612,16 @@ static async Task<string> DeleteFileCSharp(string token, int id) {
 
 ---
 
-## Gestor de Archivos (/api/file_manager)
+## Gestor de Archivos (/api/file-manager)
 
 Descripción: Gestión de archivos incluyendo subida, descarga y listado por usuario o servicio. Todas las rutas requieren autenticación.
 
 ### Fetch (JavaScript)
 
 ```javascript
-// POST /file_manager (subida de archivos)
+// POST /file-manager (subida de archivos)
 async function uploadFiles(formData) {
-  const res = await fetch(`${baseUrl}/file_manager`, {
+  const res = await fetch(`${baseUrl}/file-manager`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` },
     body: formData // FormData con campo 'files' conteniendo hasta 10 archivos
@@ -629,25 +629,25 @@ async function uploadFiles(formData) {
   return res.json();
 }
 
-// GET /file_manager/download/:service/:filename
+// GET /file-manager/download/:service/:filename
 async function downloadFile(service, filename) {
-  const res = await fetch(`${baseUrl}/file_manager/download/${service}/${filename}`, {
+  const res = await fetch(`${baseUrl}/file-manager/download/${service}/${filename}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return res.blob(); // o res.arrayBuffer() según necesidad
 }
 
-// GET /file_manager/user/:usernameOrId
+// GET /file-manager/user/:usernameOrId
 async function getUserFiles(usernameOrId) {
-  const res = await fetch(`${baseUrl}/file_manager/user/${usernameOrId}`, {
+  const res = await fetch(`${baseUrl}/file-manager/user/${usernameOrId}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return res.json();
 }
 
-// GET /file_manager/service/:service
+// GET /file-manager/service/:service
 async function getServiceFiles(service) {
-  const res = await fetch(`${baseUrl}/file_manager/service/${service}`, {
+  const res = await fetch(`${baseUrl}/file-manager/service/${service}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return res.json();
@@ -658,7 +658,7 @@ async function getServiceFiles(service) {
 
 ```dart
 Future<Map<String,dynamic>> uploadFilesDart(String token, List<File> files) async {
-  final url = Uri.parse('$baseUrl/file_manager');
+  final url = Uri.parse('$baseUrl/file-manager');
   var request = http.MultipartRequest('POST', url)
     ..headers['Authorization'] = 'Bearer $token';
   
@@ -672,7 +672,7 @@ Future<Map<String,dynamic>> uploadFilesDart(String token, List<File> files) asyn
 }
 
 Future<Uint8List> downloadFileDart(String token, String service, String filename) async {
-  final url = Uri.parse('$baseUrl/file_manager/download/$service/$filename');
+  final url = Uri.parse('$baseUrl/file-manager/download/$service/$filename');
   final res = await http.get(
     url,
     headers: {'Authorization':'Bearer $token'}
@@ -681,7 +681,7 @@ Future<Uint8List> downloadFileDart(String token, String service, String filename
 }
 
 Future<List<dynamic>> getUserFilesDart(String token, String usernameOrId) async {
-  final url = Uri.parse('$baseUrl/file_manager/user/$usernameOrId');
+  final url = Uri.parse('$baseUrl/file-manager/user/$usernameOrId');
   final res = await http.get(
     url,
     headers: {'Authorization':'Bearer $token'}
@@ -690,7 +690,7 @@ Future<List<dynamic>> getUserFilesDart(String token, String usernameOrId) async 
 }
 
 Future<List<dynamic>> getServiceFilesDart(String token, String service) async {
-  final url = Uri.parse('$baseUrl/file_manager/service/$service');
+  final url = Uri.parse('$baseUrl/file-manager/service/$service');
   final res = await http.get(
     url,
     headers: {'Authorization':'Bearer $token'}
@@ -705,7 +705,7 @@ Future<List<dynamic>> getServiceFilesDart(String token, String service) async {
 static async Task<string> UploadFilesCSharp(string token, List<string> filePaths) {
   var client = new HttpClient();
   client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-  var url = "http://localhost:4000/api/file_manager";
+  var url = "http://localhost:4000/api/file-manager";
   
   using var content = new MultipartFormDataContent();
   foreach (var path in filePaths) {
@@ -720,7 +720,7 @@ static async Task<string> UploadFilesCSharp(string token, List<string> filePaths
 static async Task<byte[]> DownloadFileCSharp(string token, string service, string filename) {
   var client = new HttpClient();
   client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-  var url = $"http://localhost:4000/api/file_manager/download/{service}/{filename}";
+  var url = $"http://localhost:4000/api/file-manager/download/{service}/{filename}";
   var res = await client.GetAsync(url);
   return await res.Content.ReadAsByteArrayAsync();
 }
@@ -728,7 +728,7 @@ static async Task<byte[]> DownloadFileCSharp(string token, string service, strin
 static async Task<string> GetUserFilesCSharp(string token, string usernameOrId) {
   var client = new HttpClient();
   client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-  var url = $"http://localhost:4000/api/file_manager/user/{usernameOrId}";
+  var url = $"http://localhost:4000/api/file-manager/user/{usernameOrId}";
   var res = await client.GetAsync(url);
   return await res.Content.ReadAsStringAsync();
 }
@@ -736,7 +736,7 @@ static async Task<string> GetUserFilesCSharp(string token, string usernameOrId) 
 static async Task<string> GetServiceFilesCSharp(string token, string service) {
   var client = new HttpClient();
   client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-  var url = $"http://localhost:4000/api/file_manager/service/{service}";
+  var url = $"http://localhost:4000/api/file-manager/service/{service}";
   var res = await client.GetAsync(url);
   return await res.Content.ReadAsStringAsync();
 }

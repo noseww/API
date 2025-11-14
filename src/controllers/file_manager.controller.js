@@ -20,7 +20,7 @@ export const uploadFiles = async (req, res, next) => {
                 storedName: f.filename,
                 mimetype: f.mimetype,
                 service,
-                downloadUrl: `${req.protocol}://${req.get("host")}/api/file_manager/download/${service}/${f.filename}`
+                downloadUrl: `${req.protocol}://${req.get("host")}/api/file-manager/download/${service}/${f.filename}`
             });
         }
         return res.json(files);
