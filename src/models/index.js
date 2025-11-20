@@ -3,6 +3,10 @@ import User from "./user.model.js";
 import Item from "./item.model.js";
 import Print from "./print.model.js";
 import SpecialService from "./sp_service.model.js";
+import SpecialServiceData from "./sp_service.data.model.js";
+import SpecialServiceBound from "./sp_service.bound.model.js";
+import SpecialServiceSpiral from "./sp_service.spiral.model.js";
+import SpecialServiceDocument from "./sp_service.document.model.js";
 import PayamentMethod from "./payament_method.model.js";
 import Product from "./product.model.js";
 import Transaction from "./transaction.model.js";
@@ -38,6 +42,42 @@ SpecialService.belongsTo(Product, {
     foreignKey: "id_special_service",
     as: "product"
 })
+
+SpecialService.hasOne(SpecialServiceData, {
+    foreignKey: "id_special_service_data",
+    as: "data"
+});
+SpecialServiceData.belongsTo(SpecialService, {
+    foreignKey: "id_special_service_data",
+    as: "special_service"
+});
+
+SpecialService.hasOne(SpecialServiceBound, {
+    foreignKey: "id_special_service_bound",
+    as: "bound"
+});
+SpecialServiceBound.belongsTo(SpecialService, {
+    foreignKey: "id_special_service_bound",
+    as: "special_service"
+});
+
+SpecialService.hasOne(SpecialServiceSpiral, {
+    foreignKey: "id_special_service_spiral",
+    as: "spiral"
+});
+SpecialServiceSpiral.belongsTo(SpecialService, {
+    foreignKey: "id_special_service_spiral",
+    as: "special_service"
+});
+
+SpecialService.hasOne(SpecialServiceDocument, {
+    foreignKey: "id_special_service_document",
+    as: "document"
+});
+SpecialServiceDocument.belongsTo(SpecialService, {
+    foreignKey: "id_special_service_document",
+    as: "special_service"
+});
 
 Transaction.hasMany(DetailTransaction, {
     foreignKey: "id_transaction",
@@ -79,8 +119,31 @@ File.belongsTo(User, {
     as: "user"
 });
 
+File.hasMany(Product, {
+    foreignKey: "id_file",
+    as: "products"
+});
 
+Product.belongsTo(File, {
+    foreignKey: "id_file",
+    as: "file"
+});
 
-const db = { sequelize, User, PayamentMethod, Product, Transaction, DetailTransaction };
+const db = {
+    sequelize,
+    User,
+    PayamentMethod,
+    Product,
+    Item,
+    Print,
+    SpecialService,
+    SpecialServiceData,
+    SpecialServiceBound,
+    SpecialServiceSpiral,
+    SpecialServiceDocument,
+    Transaction,
+    DetailTransaction,
+    File
+};
 
 export default db;

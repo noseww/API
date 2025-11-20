@@ -1,61 +1,212 @@
 import Product from "../models/product.model.js";
 import Print from "../models/print.model.js";
 import Item from "../models/item.model.js";
-import SpecialService from "../models/sp_service.model.js"
+import SpecialService from "../models/sp_service.model.js";
+import File from "../models/file.model.js";
+import SpecialServiceData from "../models/sp_service.data.model.js";
+import SpecialServiceBound from "../models/sp_service.bound.model.js";
+import SpecialServiceSpiral from "../models/sp_service.spiral.model.js";
+import SpecialServiceDocument from "../models/sp_service.document.model.js";
+import DetailTransaction from "../models/detail_transaction.model.js";
+import sequelize from "../config/db.js";
 
 class ProductService {
-    async create({ type, description, price, filename, filehash, name, mount, type_print, type_paper }) {
-        if (type === "item") {
-            const existsItem = await Item.findOne({ where: { name } });
-            if (existsItem) throw new Error("Ya existe un producto con el mismo nombre");
-            const product = await Product.create({ type: type, description: description, price: price, filename: filename, filehash: filehash });
-            const item = await Item.create({ id_item: product.id_product, name: name, mount: mount });
-            return { id_item: product.id_product, name: item.name, mount: item.mount, type: product.type, description: product.description, price: product.price }
-        } else if (type === "print") {
-            const existsPrint = await Print.findOne({ where: { type_print } });
-            if (existsPrint) throw new Error("Ya existe una impresion con el mismo tipo");
-            const product = await Product.create({ type: type, description: description, price: price, filename: filename, filehash: filehash });
-            const print = await Print.create({ id_print: product.id_product, type_print: type_print, type_paper: type_paper });
-            return { id_item: product.id_product, type_print: print.type_print, type_paper: print.type_paper, type: product.type, description: product.description, price: product.price }
-        } else {
-            const existsSpServ = await SpecialService.findOne({ where: { name } });
-            if (existsSpServ) throw new Error("Ya existe un servicio especial del mismo nombre");
-            const product = await Product.create({ type: type, description: description, price: price, filename: filename, filehash: filehash });
-            const sp_services = await SpecialService.create({ id_special_service: product.id_product, name: name });
-            return { id_item: product.id_product, name: sp_services.name, type: product.type, description: product.description, price: product.price }
+    async create({ type, description, price, filename, filehash, id_file = null, amount = 0, name, type_print, type_paper, paper_size, range, both_sides, print_amount, observations, mode, service_type, cover_type, cover_color, spiral_type, document_type, binding_type }) {
+        const t = await sequelize.transaction();
+        try {
+            if ((filename || filehash) && !id_file) {
+                throw new Error("Para asociar un archivo primero súbelo con file.service y pasa 'id_file' en el payload");
+            }
+
+            if (type === "item") {
+                const existsItem = await Item.findOne({ where: { name }, transaction: t });
+                if (existsItem) throw new Error("Ya existe un producto con el mismo nombre");
+                const product = await Product.create({ type: type, description: description, price: price, id_file, amount }, { transaction: t });
+                const item = await Item.create({ id_item: product.id_product, name: name }, { transaction: t });
+                await t.commit();
+                return { id_item: product.id_product, name: item.name, amount: product.amount, type: product.type, description: product.description, price: product.price }
+            } else if (type === "print") {
+                const existsPrint = await Print.findOne({ where: { print_type: type_print }, transaction: t });
+                if (existsPrint) throw new Error("Ya existe una impresion con el mismo tipo");
+                const product = await Product.create({ type: type, description: description, price: price, id_file, amount }, { transaction: t });
+                const print = await Print.create({ id_print: product.id_product, print_type: type_print, paper_type: type_paper }, { transaction: t });
+                await t.commit();
+                return { id_item: product.id_product, type_print: print.print_type, type_paper: print.paper_type, type: product.type, description: product.description, price: product.price }
+            } else {
+                const product = await Product.create({ type: type, description: description, price: price, id_file, amount }, { transaction: t });
+                const sp_services = await SpecialService.create({ id_special_service: product.id_product, type: service_type, mode: mode }, { transaction: t });
+                if (mode === "online") {
+                    let linkedPrintId = id_print;
+                    if (!linkedPrintId) {
+                        if (!type_print || !type_paper) throw new Error("Faltan datos de impresión para crear el print asociado (type_print, type_paper)");
+                        const printProduct = await Product.create({ type: 'print', description: `Print for special_service ${product.id_product}`, price: 0, id_file: null, amount: 0 }, { transaction: t });
+                        await Print.create({ id_print: printProduct.id_product, print_type: type_print, paper_type: type_paper, paper_size: (typeof paper_size !== 'undefined' ? paper_size : null), range: (typeof range !== 'undefined' ? range : null), both_sides: (typeof both_sides !== 'undefined' ? both_sides : false), amount: (typeof print_amount !== 'undefined' ? print_amount : 0), observations: (typeof observations !== 'undefined' ? observations : null) }, { transaction: t });
+                        linkedPrintId = printProduct.id_product;
+                    }
+                    await SpecialServiceData.create({ id_special_service_data: product.id_product, id_print: linkedPrintId }, { transaction: t });
+                }
+
+                if (service_type === "enc_imp") {
+                    await SpecialServiceBound.create({ id_special_service_bound: product.id_product, cover_type: cover_type, cover_color: cover_color }, { transaction: t });
+                } else if (service_type === "ani_imp") {
+                    await SpecialServiceSpiral.create({ id_special_service_spiral: product.id_product, spiral_type: spiral_type }, { transaction: t });
+                } else if (service_type === "doc_esp") {
+                    await SpecialServiceDocument.create({ id_special_service_document: product.id_product, document_type: document_type, binding_type: binding_type }, { transaction: t });
+                }
+
+                await t.commit();
+                return { id_item: product.id_product, type: product.type, description: product.description, price: product.price }
+            }
+        } catch (err) {
+            await t.rollback();
+            throw err;
         }
     }
 
     async findAll() {
-        const prints = await Print.findAll({ attributes: ["id_print", "type_print", "type_paper", "createdAt"] });
-        const items = await Item.findAll({ attributes: ["id_item", "name", "mount", "createdAt"] });
-        const products = await Product.findAll({ attributes: ["id_product", "type", "description", "price", "filename", "filehash", "createdAt"] });
+        const prints = await Print.findAll();
+        const items = await Item.findAll();
+        const products = await Product.findAll({
+            include: [
+                { model: File, as: "file" },
+                { model: Item, as: "item" },
+                { model: Print, as: "print" },
+                {
+                    model: SpecialService, as: "special_service", include: [
+                        { model: SpecialServiceData, as: "data" },
+                        { model: SpecialServiceBound, as: "bound" },
+                        { model: SpecialServiceSpiral, as: "spiral" },
+                        { model: SpecialServiceDocument, as: "document" },
+                    ]
+                },
+                { model: DetailTransaction, as: "detail_transactions" }
+            ]
+        });
+
         return { prints, items, products };
     }
 
     async findOne(id) {
-        const product = await Product.findByPk(id);
+        const product = await Product.findByPk(id, {
+            include: [
+                { model: File, as: "file" },
+                { model: Item, as: "item" },
+                { model: Print, as: "print" },
+                {
+                    model: SpecialService, as: "special_service", include: [
+                        { model: SpecialServiceData, as: "data" },
+                        { model: SpecialServiceBound, as: "bound" },
+                        { model: SpecialServiceSpiral, as: "spiral" },
+                        { model: SpecialServiceDocument, as: "document" },
+                    ]
+                },
+                { model: DetailTransaction, as: "detail_transactions" }
+            ]
+        });
         if (!product) throw new Error('Producto no encontrado');
         return product;
     }
 
-    async update(id, { type, description, price, name, mount, type_print, type_paper }) {
-        const product = await Product.findByPk(id);
-        if (product === null) throw new Error("El producto no existe")
-        await Product.update({ description: description, price: price }, { where: { id_product: id } })
-        if (type === "item") {
-            await Item.update({ name: name, mount: mount }, { where: { id_item: id } });
-        } else {
-            await Print.update({ type_print: type_print, type_paper: type_paper }, { where: { id_print: id } });
+    async update(id, payload) {
+        const t = await sequelize.transaction();
+        try {
+            const product = await Product.findByPk(id, { transaction: t });
+            if (product === null) throw new Error("El producto no existe")
+
+            const { description, price, amount, id_file } = payload;
+            const productUpdates = {};
+            if (typeof description !== 'undefined') productUpdates.description = description;
+            if (typeof price !== 'undefined') productUpdates.price = price;
+            if (typeof amount !== 'undefined') productUpdates.amount = amount;
+            if (typeof id_file !== 'undefined') productUpdates.id_file = id_file;
+            if (Object.keys(productUpdates).length) {
+                await Product.update(productUpdates, { where: { id_product: id }, transaction: t });
+            }
+
+            const prodType = product.type;
+            if (prodType === 'item') {
+                if (typeof payload.name !== 'undefined') {
+                    await Item.update({ name: payload.name }, { where: { id_item: id }, transaction: t });
+                }
+            } else if (prodType === 'print') {
+                const printUpdates = {};
+                if (typeof payload.type_print !== 'undefined') printUpdates.print_type = payload.type_print;
+                if (typeof payload.paper_type !== 'undefined') printUpdates.paper_type = payload.paper_type;
+                if (typeof payload.paper_size !== 'undefined') printUpdates.paper_size = payload.paper_size;
+                if (typeof payload.range !== 'undefined') printUpdates.range = payload.range;
+                if (typeof payload.both_sides !== 'undefined') printUpdates.both_sides = payload.both_sides;
+                if (typeof payload.print_amount !== 'undefined') printUpdates.amount = payload.print_amount;
+                if (typeof payload.observations !== 'undefined') printUpdates.observations = payload.observations;
+                if (Object.keys(printUpdates).length) await Print.update(printUpdates, { where: { id_print: id }, transaction: t });
+            } else if (prodType === 'special_service') {
+                const ssUpdates = {};
+                if (typeof payload.service_type !== 'undefined') ssUpdates.type = payload.service_type;
+                if (typeof payload.mode !== 'undefined') ssUpdates.mode = payload.mode;
+                if (Object.keys(ssUpdates).length) await SpecialService.update(ssUpdates, { where: { id_special_service: id }, transaction: t });
+
+                if (typeof payload.id_print !== 'undefined') {
+                    const existsData = await SpecialServiceData.findOne({ where: { id_special_service_data: id }, transaction: t });
+                    if (existsData) {
+                        await SpecialServiceData.update({ id_print: payload.id_print }, { where: { id_special_service_data: id }, transaction: t });
+                    } else {
+                        await SpecialServiceData.create({ id_special_service_data: id, id_print: payload.id_print }, { transaction: t });
+                    }
+                }
+
+                if (typeof payload.cover_type !== 'undefined' || typeof payload.cover_color !== 'undefined') {
+                    const existsBound = await SpecialServiceBound.findOne({ where: { id_special_service_bound: id }, transaction: t });
+                    const boundUpdates = {};
+                    if (typeof payload.cover_type !== 'undefined') boundUpdates.cover_type = payload.cover_type;
+                    if (typeof payload.cover_color !== 'undefined') boundUpdates.cover_color = payload.cover_color;
+                    if (existsBound) await SpecialServiceBound.update(boundUpdates, { where: { id_special_service_bound: id }, transaction: t });
+                    else await SpecialServiceBound.create(Object.assign({ id_special_service_bound: id }, boundUpdates), { transaction: t });
+                }
+
+                if (typeof payload.spiral_type !== 'undefined') {
+                    const existsSpiral = await SpecialServiceSpiral.findOne({ where: { id_special_service_spiral: id }, transaction: t });
+                    if (existsSpiral) await SpecialServiceSpiral.update({ spiral_type: payload.spiral_type }, { where: { id_special_service_spiral: id }, transaction: t });
+                    else await SpecialServiceSpiral.create({ id_special_service_spiral: id, spiral_type: payload.spiral_type }, { transaction: t });
+                }
+
+                if (typeof payload.document_type !== 'undefined' || typeof payload.binding_type !== 'undefined') {
+                    const existsDoc = await SpecialServiceDocument.findOne({ where: { id_special_service_document: id }, transaction: t });
+                    const docUpdates = {};
+                    if (typeof payload.document_type !== 'undefined') docUpdates.document_type = payload.document_type;
+                    if (typeof payload.binding_type !== 'undefined') docUpdates.binding_type = payload.binding_type;
+                    if (existsDoc) await SpecialServiceDocument.update(docUpdates, { where: { id_special_service_document: id }, transaction: t });
+                    else await SpecialServiceDocument.create(Object.assign({ id_special_service_document: id }, docUpdates), { transaction: t });
+                }
+            }
+
+            await t.commit();
+            return this.findOne(id);
+        } catch (err) {
+            await t.rollback();
+            throw err;
         }
-        return this.findOne(id);
     }
 
     async remove(id) {
-        await Item.destroy({ where: { id_product: id } });
-        await Print.destroy({ where: { id_product: id } });
-        await Product.destroy({ where: { id_product: id } });
-        return { message: 'Producto eliminado' };
+        const t = await sequelize.transaction();
+        try {
+            await SpecialServiceData.destroy({ where: { id_special_service_data: id }, transaction: t });
+            await SpecialServiceBound.destroy({ where: { id_special_service_bound: id }, transaction: t });
+            await SpecialServiceSpiral.destroy({ where: { id_special_service_spiral: id }, transaction: t });
+            await SpecialServiceDocument.destroy({ where: { id_special_service_document: id }, transaction: t });
+
+            await DetailTransaction.destroy({ where: { id_product: id }, transaction: t });
+
+            await Item.destroy({ where: { id_item: id }, transaction: t });
+            await Print.destroy({ where: { id_print: id }, transaction: t });
+            await SpecialService.destroy({ where: { id_special_service: id }, transaction: t });
+            await Product.destroy({ where: { id_product: id }, transaction: t });
+
+            await t.commit();
+            return { message: 'Producto eliminado' };
+        } catch (err) {
+            await t.rollback();
+            throw err;
+        }
     }
 }
 

@@ -8,22 +8,27 @@ const Product = sequelize.define("product", {
         autoIncrement: true,
     },
     type: {
-        type: DataTypes.ENUM("item", "print"),
+        type: DataTypes.ENUM("item", "print", "special_service",),
         allowNull: false,
     },
     description: { type: DataTypes.STRING, allowNull: true },
     price: {
-        type: DataTypes.FLOAT,
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
+        validate: { min: 0 }
     },
-    filename: {
-        type: DataTypes.STRING,
+    id_file: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "file", key: "id_file" },
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+    },
+    amount: {
+        type: DataTypes.INTEGER,
         allowNull: false,
+        validate: { min: 0 },
     },
-    filehash: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-}, { tableName: "product", timestamps: true });
+}, { tableName: "product", timestamps: true, underscored: true });
 
 export default Product;
